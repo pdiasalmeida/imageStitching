@@ -1,0 +1,7 @@
+# eclipse files
+.cproject
+.project
+
+# built file
+*.o
+createPanorama
