@@ -5,3 +5,6 @@
 # built file
 *.o
 createPanorama
+
+# logs
+logs/

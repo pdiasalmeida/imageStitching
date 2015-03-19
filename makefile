@@ -1,8 +1,8 @@
 CC=			g++
-CFLAGS=		-c -g -O0 -Wall `pkg-config --cflags opencv libconfig++`
+CFLAGS=		-c -g -O0 -Wall -std=c++11 `pkg-config --cflags opencv libconfig++`
 LDFLAGS=	`pkg-config --libs opencv libconfig++`
 
-SOURCES=	createPanorama.cpp
+SOURCES=	src/createPanorama.cpp
 
 OBJECTS=	$(SOURCES:.cpp=.o)
 
