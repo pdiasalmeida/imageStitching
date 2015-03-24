@@ -23,9 +23,9 @@ struct image_match
 
 struct match_compare
 {
-	bool operator() (const image_match& lhs, const image_match& rhs)
-	const{
-		return lhs.confidence < rhs.confidence;
+	bool operator() (const image_match& lhs, const image_match& rhs) const
+	{
+		return lhs.confidence > rhs.confidence;
 	}
 };
 

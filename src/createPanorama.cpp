@@ -23,8 +23,10 @@ int main( int argc, char** argv )
 	LOG(INFO) << "Parsing configuration.";
 	parseConfig("config/app.conf");
 
-	_stitcher->addImage("./data/sample/box.png");
-	_stitcher->addImage("./data/sample/box_in_scene.png");
+	_stitcher->addImage("./data/samples/stLuzia/resize/IMG_5182m.JPG");
+	_stitcher->addImage("./data/samples/stLuzia/resize/IMG_5183m.JPG");
+	_stitcher->addImage("./data/samples/stLuzia/resize/IMG_5184m.JPG");
+	//_stitcher->addImage("./data/samples/stLuzia/resize/IMG_5185m.JPG");
 
 	_stitcher->runImageMatcher();
 	_stitcher->drawImageMatches();
