@@ -45,6 +45,101 @@ void FeatureHandler::init( Detector det, DescriptorExtractor des, DescriptorMatc
 	setDescriptorMatcher(match);
 }
 
+std::vector< cv::KeyPoint > FeatureHandler::detectKeypoints( cv::Mat image )
+{
+	LOG(INFO) << "Running feature detector.";
+
+	std::vector< cv::KeyPoint > keypoints;
+	_fDetector->detect(image, keypoints);
+
+	LOG(INFO) << "Finished feature detection. Found " << keypoints.size() << " keypoints.";
+
+	return keypoints;
+}
+
+cv::Mat FeatureHandler::computeDescriptors( cv::Mat image, std::vector< cv::KeyPoint > keypoints )
+{
+	LOG(INFO) << "Computing feature descriptors.";
+
+	cv::Mat descriptors;
+	_fDescriptor->compute(image, keypoints, descriptors);
+
+	LOG(INFO) << "Finished descriptor extraction.";
+
+	return descriptors;
+}
+
+std::vector< cv::DMatch > FeatureHandler::getImageMatches( cv::Mat descriptors1, cv::Mat descriptors2 )
+{
+	LOG(INFO) << "Matching images.";
+
+	std::vector< cv::DMatch > matches;
+	_fMatcher->match( descriptors1, descriptors2, matches );
+
+	LOG(INFO) << "Finished feature matching.";
+
+	return matches;
+}
+
+std::vector< std::vector< cv::DMatch > > FeatureHandler::getImageKnnMatches( cv::Mat descriptors1,
+		cv::Mat descriptors2, int k )
+{
+	LOG(INFO) << "Matching images.";
+
+	std::vector< std::vector< cv::DMatch > > knnMatches;
+	_fMatcher->knnMatch( descriptors1, descriptors2, knnMatches, k );
+
+	LOG(INFO) << "Finished feature knn matching.";
+
+	return knnMatches;
+}
+
+std::vector< cv::DMatch > FeatureHandler::ratioTest( std::vector< std::vector< cv::DMatch > > knnMatches )
+{
+	LOG(INFO) << "Running ratio test.";
+
+	std::vector< cv::DMatch > matches;
+
+	std::vector< std::vector< cv::DMatch > >::iterator it = knnMatches.begin();
+	for( ; it != knnMatches.end(); it++ )
+	{
+		if( !(( it->at(0).distance / it->at(1).distance ) > _ratioTestThreshold) )
+		{
+			matches.push_back(it->at(0));
+		}
+	}
+
+	LOG(INFO) << "Finished ratio test.";
+
+	return matches;
+}
+
+std::vector< cv::DMatch > FeatureHandler::symmetryTest( std::vector< cv::DMatch > img1Toimg2,
+		std::vector< cv::DMatch > img2Toimg1 )
+{
+	LOG(INFO) << "Running symmetry test.";
+
+	std::vector< cv::DMatch > matches;
+
+	std::vector< cv::DMatch >::iterator it1To2 = img1Toimg2.begin();
+	for( ; it1To2 != img1Toimg2.end(); it1To2++ )
+	{
+		std::vector< cv::DMatch >::iterator it2To1 = img2Toimg1.begin();
+		for( ; it2To1 != img2Toimg1.end(); it2To1++ )
+		{
+			if( (it1To2->queryIdx == it2To1->trainIdx) &&
+					(it2To1->queryIdx == it1To2->trainIdx) )
+			{
+				matches.push_back((*it1To2));
+			}
+		}
+	}
+
+	LOG(INFO) << "Finished symmetry test.";
+
+	return matches;
+}
+
 void FeatureHandler::setFeatureDetector(Detector detectorID)
 {
 	switch(detectorID)

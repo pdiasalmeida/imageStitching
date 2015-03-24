@@ -13,6 +13,14 @@ public:
 	FeatureHandler();
 	FeatureHandler( Detector det, DescriptorExtractor des, DescriptorMatcher match, float ratioTestThresh );
 
+	std::vector< cv::KeyPoint > detectKeypoints( cv::Mat image );
+	cv::Mat computeDescriptors(cv::Mat image, std::vector< cv::KeyPoint > keypoints);
+	std::vector< cv::DMatch > getImageMatches(cv::Mat descriptors1, cv::Mat descriptors2);
+	std::vector< std::vector< cv::DMatch > > getImageKnnMatches(cv::Mat descriptors1, cv::Mat descriptors2, int k);
+	std::vector< cv::DMatch > ratioTest( std::vector< std::vector< cv::DMatch > > knnMatches );
+	std::vector< cv::DMatch > symmetryTest( std::vector< cv::DMatch > img1Toimg2,
+			std::vector< cv::DMatch > img2Toimg1 );
+
 	int getDetectorID();
 	int getDescriptorID();
 	int getMatcherID();
