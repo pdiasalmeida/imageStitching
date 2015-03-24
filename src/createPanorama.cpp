@@ -5,8 +5,6 @@
 #include "FeatureHandler.hpp"
 #include "Stitching.hpp"
 
-#include <opencv2/highgui/highgui.hpp>
-
 void parseConfig( std::string path );
 int parseDetector( libconfig::Setting& set );
 int parseDescriptor( libconfig::Setting& set );
@@ -25,9 +23,11 @@ int main( int argc, char** argv )
 	LOG(INFO) << "Parsing configuration.";
 	parseConfig("config/app.conf");
 
-	cv::Mat image1 = cv::imread("./data/sample/box.png", cv::IMREAD_GRAYSCALE);
-	cv::Mat image2 = cv::imread("./data/sample/box_in_scene.png", cv::IMREAD_GRAYSCALE);
-	_stitcher->matchImages( image1, image2 );
+	_stitcher->addImage("./data/sample/box.png");
+	_stitcher->addImage("./data/sample/box_in_scene.png");
+
+	_stitcher->runImageMatcher();
+	_stitcher->drawImageMatches();
 
 	return EXIT_SUCCESS;
 }
