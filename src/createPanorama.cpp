@@ -3,6 +3,9 @@
 
 #include "libs/easylogging++.h"
 #include "FeatureHandler.hpp"
+#include "Stitching.hpp"
+
+#include <opencv2/highgui/highgui.hpp>
 
 void parseConfig( std::string path );
 int parseDetector( libconfig::Setting& set );
@@ -11,6 +14,7 @@ int parseMatcher( libconfig::Setting& set );
 void initLog( std::string path );
 
 FeatureHandler* _fh;
+Stitching* _stitcher;
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -20,6 +24,10 @@ int main( int argc, char** argv )
 	LOG(INFO) << "'createPanorama' initialized.";
 	LOG(INFO) << "Parsing configuration.";
 	parseConfig("config/app.conf");
+
+	cv::Mat image1 = cv::imread("./data/sample/box.png", cv::IMREAD_GRAYSCALE);
+	cv::Mat image2 = cv::imread("./data/sample/box_in_scene.png", cv::IMREAD_GRAYSCALE);
+	_stitcher->matchImages( image1, image2 );
 
 	return EXIT_SUCCESS;
 }
@@ -33,12 +41,28 @@ void parseConfig( std::string path )
 	_fh = new FeatureHandler();
 	float ratioThresh = 0.85;
 
-	parseDetector(cfg.lookup("application.featureHandler.detector"));
-	parseDescriptor(cfg.lookup("application.featureHandler.descriptor"));
-	parseMatcher(cfg.lookup("application.featureHandler.matcher"));
+	parseDetector(cfg.lookup("application.stitching.featureHandler.detector"));
+	parseDescriptor(cfg.lookup("application.stitching.featureHandler.descriptor"));
+	parseMatcher(cfg.lookup("application.stitching.featureHandler.matcher"));
 
-	cfg.lookupValue("application.featureHandler.simmetryTestRatio", ratioThresh);
+	cfg.lookupValue("application.stitching.featureHandler.simmetryTestRatio", ratioThresh);
 	_fh->setRatioTestThreshold(ratioThresh);
+
+	//----------------------------------------------- build stitching class -------------------------------------//
+	_stitcher = new Stitching();
+	bool runRatioTest = false;
+	bool runSymmetryTest = false;
+	bool drawMatches = false;
+
+	cfg.lookupValue("application.stitching.matching.symmetryTest", runSymmetryTest);
+	cfg.lookupValue("application.stitching.matching.ratioTest", runRatioTest);
+	cfg.lookupValue("application.stitching.matching.drawMatches", drawMatches);
+
+	_stitcher->setRunRatioTest(runRatioTest);
+	_stitcher->setRunSymmetryTest(runSymmetryTest);
+	_stitcher->setDrawMatches(drawMatches);
+
+	_stitcher-> setFeatureHandler(_fh);
 }
 
 int parseDetector( libconfig::Setting& set )
